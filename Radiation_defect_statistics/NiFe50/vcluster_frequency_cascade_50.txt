@@ -1,0 +1,8 @@
+# Cluster_Size Frequency
+1 75
+2 7
+3 3
+4 2
+6 2
+7 1
+8 1
