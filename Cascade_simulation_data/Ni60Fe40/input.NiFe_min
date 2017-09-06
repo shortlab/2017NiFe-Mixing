@@ -1,0 +1,50 @@
+
+# Input file for Cu cascade simulation
+
+
+
+variable latparam equal 3.5713415             #Lattice constant at 300K
+variable  myT equal  300
+variable  boxL equal 15
+variable  interL equal "v_boxL - 0.25"
+
+
+#variable     Crfraction   equal 0.356  #(10/(10+18))
+# ------------------------ INITIALIZATION ----------------------------
+echo both
+units 		metal
+dimension	3
+boundary	p	p	p
+atom_style	atomic
+atom_modify map array 
+
+
+# ----------------------- ATOM DEFINITION ----------------------------
+read_data       data.pka_num_${pkaNum}    
+
+group           Cr type 3
+group           Fe type 1
+group           Ni type 2
+
+
+# ------------------------ FORCE FIELDS ------------------------------
+pair_style      hybrid/overlay eam/alloy  zbl  0.35 0.5
+pair_coeff      * * eam/alloy /home/jinmiao/projects/lammps-16Feb16/potentials/FeNiCr_Bonny_2013_ptDef.eam.alloy Fe Ni Cr
+
+
+
+thermo 500                                                               
+thermo_style custom step dt time press pe temp lx
+
+variable cnacut   equal "v_latparam*0.8536"   #FCC 
+compute csym all centro/atom fcc
+compute PE   all pe/atom
+compute CNA  all cna/atom ${cnacut}
+dump         minimized all custom 1000 dump_minimized_pka_num_${pkaNum}.data id type x y z c_csym c_PE c_CNA
+minimize     1e-10 1e-10 10000 10000
+
+variable     e equal pe
+print        "$e" append PEs.dat
+
+
+
